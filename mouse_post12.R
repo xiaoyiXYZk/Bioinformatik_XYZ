@@ -46,7 +46,7 @@ DimHeatmap(mouse, dims = 1:15, cells = 500, balanced = TRUE)
 #metafeature: combines information across a correlated feature set
 mouse <- JackStraw(mouse, num.replicate = 100)
 mouse <- ScoreJackStraw(mouse, dims = 1:20)
-JackStrawPlot(mouse, dims = 1:15) #p-values #all p values are small-> so good sign 
+JackStrawPlot(mouse, dims = 1:15) 
 ElbowPlot(mouse) #ranking of principle components #how to read it?(the slope = significance?)
 mouse <- FindNeighbors(mouse, dims = 1:10)
 mouse <- FindClusters(mouse, resolution = 0.5)

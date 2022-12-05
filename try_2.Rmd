@@ -123,9 +123,25 @@ ElbowPlot(mouse)
 ```{r}
 mouse <- FindNeighbors(mouse, dims = 1:10)
 mouse <- FindClusters(mouse, resolution = 0.5)
+
+# Look at cluster IDs of the first 5 cells
+head(Idents(mouse), 5)
 ```
 # IX. Non-linear Dimension Reduction
+## e.g. UMAP, tSNE
+input to the UMAP and tSNE: same PCs as input to the clustering analysis
+```{r}
+mouse <- RunUMAP(mouse, dims = 1:10)
+#note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
+DimPlot(mouse, reduction = "umap")
+saveRDS(mouse, file = "/Users/xiaoyizheng/Downloads/Bioinfo_Einarbeiten/CellChatSelf/mouse/output/mouseOutput.rds")
+```
+
 
 # X. Cluster Biomarkers
+### Finding differentially expressed features
+```{r}
+
+```
 
 # XI. Assigning Cell Type Identity to Clusters

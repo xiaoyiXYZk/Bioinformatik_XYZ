@@ -1,7 +1,10 @@
 library(Biobase)
 library(GEOquery)
 library(Seurat)
+
 library(CellChat)
+library(patchwork)
+options(stringsAsFactors = FALSE)
 
 load(url("https://ndownloader.figshare.com/files/25950872"))
 
