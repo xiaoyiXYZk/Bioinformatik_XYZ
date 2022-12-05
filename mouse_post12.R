@@ -2,29 +2,30 @@ library(dplyr)
 library(Seurat)
 library(patchwork)
 
-mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
+mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Bioinformatik/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
 mouse.data
 
 mouse <- CreateSeuratObject(counts = mouse.data, project = "MoSk", min.cells = 3, min.features = 200)
 mouse
 
-mouse[["percent.mt"]] <- PercentageFeatureSet(mouse, pattern = "^MT-") 
+mouse[["percent.mt"]] <- PercentageFeatureSet(mouse, pattern = "^MT-") #mitoc. genes -> Zeichen fuer schlechte Qualitaet
 VlnPlot(mouse, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3) #All cells have the same value of percent.mt.(maybe bc already filtered?)
 
-head(mouse@meta.data, 5)
+head(mouse@meta.data, 5) #Show QC metrics for the first 5 cells
 
-mouse.data[c("Igf2", "Cck", "Pf4"), 1:30]
+mouse.data[c("Igf2", "Cck", "Pf4"), 1:30] #a few genes in the first 30 cells #picked "Igf2", "Cck", "Pf4" according to web
 
 #visualize feature-feature relationships
-plot1 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "percent.mt") #since all have same mt quality...
+plot2 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") #positively correlated
 plot1 + plot2
 
-#filter mouse
+#filter "mouse"
 mouse <- subset(mouse, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5) #hmmm but mt for filtering unneccessary
-
+#4)feature selection
 mouse <- FindVariableFeatures(mouse, selection.method = "vst", nfeatures = 2000)
 top10 <- head(VariableFeatures(mouse), 10) # Identify the 10 most highly variable genes
+top10
 
 plot1 <- VariableFeaturePlot(mouse)
 plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
@@ -34,7 +35,7 @@ plot1 + plot2
 all.genes <- rownames(mouse)
 mouse <- ScaleData(mouse, features = all.genes)
 
-#mouse <- ScaleData(mouse)
+#optional: mouse <- ScaleData(mouse)
 
 mouse <- RunPCA(mouse, features = VariableFeatures(object = mouse))
 print(mouse[["pca"]], dims = 1:5, nfeatures = 5)

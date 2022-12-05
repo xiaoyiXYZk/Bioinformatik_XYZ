@@ -3,46 +3,126 @@ title: "md"
 output: html_document
 date: "2022-12-01"
 ---
-
-```{r, include=FALSE}
+# I.Setup
+Libraries needed: <!-- Note: I wrote results hide but the ## are not results maybe?? -->[Note: I wrote results hide but the ## are not results maybe??]
+```{r, results = "hide"}
 library(dplyr)
 library(Seurat)
 library(patchwork)
 ```
 
+Loading data & Checking out how the loaded data looks like:
 ```{r, results = "hide"}
 mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Bioinformatik/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
+
 mouse.data
-
-mouse <- CreateSeuratObject(counts = mouse.data, project = "MoSk", min.cells = 3, min.features = 200)
-mouse
-
-mouse[["percent.mt"]] <- PercentageFeatureSet(mouse, pattern = "^MT-") 
 ```
-mitochondrial genes -> Zeichen fuer schlechte Qualitaet
+
+Creating Seurat object:
 ```{r}
+mouse <- CreateSeuratObject(counts = mouse.data, project = "MoSk", min.cells = 3, min.features = 200)
+```
+# II. Pre-processing
+QC (quality control) Matrix for selection and filtration of cells, using user-defined criteria. In this case it is the mitochondrial genes as criteria. [note: apparently they all have same level of mt content. Maybe pre-processed already? or maybe that is not the proper criteria to choose in this case. Which one could be better instead of it?]
+```{r}
+mouse[["percent.mt"]] <- PercentageFeatureSet(mouse, pattern = "^MT-") 
+
+#Visualization by violin plot (mt percent no significance):
 VlnPlot(mouse, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3) 
 ```
-#All cells have the same value of percent.mt.(maybe bc already filtered?)
+Genes and total molecules calculated and stored in obj. meta data.
+Showing QC metrics for the first 5 cells:
 ```{r}
 head(mouse@meta.data, 5) 
 ```
-Show QC metrics for the first 5 cells
+
 ```{r}
-mouse.data[c("Igf2", "Cck", "Pf4"), 1:30] #a few genes in the first 30 cells #picked "Igf2", "Cck", "Pf4" according to web
+#examining a few genes in the first thirty cells
+mouse.data[c("Igf2", "Cck", "Pf4"), 1:30] 
+#a few genes in the first 30 cells 
+#picked "Igf2", "Cck", "Pf4" according to web
 ```
 
 
-### visualize feature-feature relationships
+### Visualization of feature-feature relationships
 ```{r}
 plot1 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "percent.mt") 
-```
----
-since all have same mt quality...
-```{r}
+
+#since all have same mt quality...
+
 plot2 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
-```
-positively correlated
-```{r}
+#positively correlated
+
 plot1 + plot2
 ```
+
+# III. Normalization
+since it is already normalized => this step omitted
+
+# IV. Feature Selection
+```{r}
+mouse <- FindVariableFeatures(mouse, selection.method = "vst", nfeatures = 2000)
+top10 <- head(VariableFeatures(mouse), 10) # Identify the 10 most highly variable genes
+top10
+
+plot1 <- VariableFeaturePlot(mouse)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1 + plot2
+```
+
+# V. Scaling
+```{r}
+all.genes <- rownames(mouse)
+mouse <- ScaleData(mouse, features = all.genes)
+
+
+#optional: mouse <- ScaleData(mouse)
+```
+# VI. Linear Dimension Reduction
+### Perform PCA
+```{r}
+mouse <- RunPCA(mouse, features = VariableFeatures(object = mouse))
+```
+### Examine and visualize PCA results a few different ways
+```{r}
+print(mouse[["pca"]], dims = 1:5, nfeatures = 5)
+```
+```{r}
+VizDimLoadings(mouse, dims = 1:2, reduction = "pca")
+```
+```{r}
+DimPlot(mouse, reduction = "pca")
+```
+
+heatmap: exploration of the primary sources of heterogeneity -> decide which PCs to include for further downstream analyses
+```{r}
+DimHeatmap(mouse, dims = 1, cells = 500, balanced = TRUE) #heatmap: exploration of the primary sources of heterogeneity
+DimHeatmap(mouse, dims = 1:15, cells = 500, balanced = TRUE)
+```
+# VII. Determination of Dimension
+Metafeature combines information across a correlated feature set. 
+top principal components => robust compression
+how many PCs to take?
+###JackStraw procedure
+permute subset of the data (1% by default) and rerun PCA
+significant PCs ~ strong enrichment of low p-value features
+```{r}
+mouse <- JackStraw(mouse, num.replicate = 100)
+mouse <- ScoreJackStraw(mouse, dims = 1:20)
+```
+```{r}
+JackStrawPlot(mouse, dims = 1:15)
+```
+
+alternative heuristic method Elbow plot:
+observe where the elbow is and then see which PCs to choose
+```{r}
+ElbowPlot(mouse)
+```
+# VIII. Clustering Cells
+
+# IX. Non-linear Dimension Reduction
+
+# X. Cluster Biomarkers
+
+# XI. Assigning Cell Type Identity to Clusters
