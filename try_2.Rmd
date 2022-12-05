@@ -120,7 +120,10 @@ observe where the elbow is and then see which PCs to choose
 ElbowPlot(mouse)
 ```
 # VIII. Clustering Cells
-
+```{r}
+mouse <- FindNeighbors(mouse, dims = 1:10)
+mouse <- FindClusters(mouse, resolution = 0.5)
+```
 # IX. Non-linear Dimension Reduction
 
 # X. Cluster Biomarkers
