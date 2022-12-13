@@ -1,0 +1,24 @@
+---
+title: "md"
+output: html_document
+date: "2022-12-01"
+---
+# I.Setup
+Libraries needed: <!-- Note: I wrote results hide but the ## are not results maybe?? -->[Note: I wrote results hide but the ## are not results maybe??]
+```{r, results = "hide"}
+library(Biobase)
+library(GEOquery)
+library(Seurat)
+library(CellChat)
+library(dplyr)
+library(patchwork)
+```
+```{r}
+load(url("https://ndownloader.figshare.com/files/25950872"))
+
+data.input = data_humanSkin$data
+meta = data_humanSkin$meta
+husk <- CreateSeuratObject(data.input, meta.data = meta)
+
+husk
+```

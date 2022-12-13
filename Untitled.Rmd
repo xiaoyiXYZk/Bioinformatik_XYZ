@@ -1,0 +1,16 @@
+
+
+# I.Setup
+Libraries needed: <!-- Note: I wrote results hide but the ## are not results maybe?? -->[Note: I wrote results hide but the ## are not results maybe??]
+```{r, results = "hide"}
+library(dplyr)
+library(Seurat)
+library(patchwork)
+```
+
+Loading data & Checking out how the loaded data looks like:
+```{r}
+mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Praktikum/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
+
+mouse.data
+```
