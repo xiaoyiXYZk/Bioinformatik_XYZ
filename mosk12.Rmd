@@ -1,8 +1,4 @@
----
-title: "md"
-output: html_document
-date: "2022-12-01"
----
+
 # I.Setup
 Libraries needed: <!-- Note: I wrote results hide but the ## are not results maybe?? -->[Note: I wrote results hide but the ## are not results maybe??]
 ```{r, results = "hide"}
@@ -122,7 +118,8 @@ ElbowPlot(mouse)
 # VIII. Clustering Cells
 ```{r}
 mouse <- FindNeighbors(mouse, dims = 1:10)
-mouse <- FindClusters(mouse, resolution = 0.5)
+#mouse <- FindClusters(mouse, resolution = 0.5)
+mouse <- FindClusters(mouse, resolution = 0.4)
 
 # Look at cluster IDs of the first 5 cells
 head(Idents(mouse), 5)
@@ -144,7 +141,7 @@ DimPlot(mouse, reduction = "umap")
 - thresh.test argument: requires a feature to be differentially expressed (on average) by some amount between the two groups
 - to speed up computations: max.cells.per.ident
 ```{r}
-# find all markers of cluster 2
+
 cluster2.markers <- FindMarkers(mouse, ident.1 = 2, min.pct = 0.25)
 head(cluster2.markers, n = 5)
 cluster5.markers <- FindMarkers(mouse, ident.1 = 5, ident.2 = c(0, 3), min.pct = 0.25)
@@ -154,10 +151,49 @@ mouse.markers <- FindAllMarkers(mouse, only.pos = TRUE, min.pct = 0.25, logfc.th
 mouse.markers %>%
   group_by(cluster) %>%
   slice_max(n = 2, order_by = avg_log2FC)
-#cluster0.markers <- FindMarkers(mouse, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
+cluster0.markers <- FindMarkers(mouse, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
+
 cluster0.markers <- FindMarkers(mouse, ident.1 = 0, logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
 VlnPlot(mouse, features = c("Rgs5", "Tyrobp"))
 VlnPlot(mouse, features = c("Col1a1", "Col1a2"), slot = "counts", log = TRUE) #plot raw counts
+
+cluster0.markers <- FindMarkers(mouse, ident.1 = 0, min.pct = 0.25)
+head(cluster0.markers, n = 5)
+VlnPlot(mouse, features = c("Vim", "B2m", "Cst3", "Tmsb4x", "Ftl1")) 
+
+cluster1.markers <- FindMarkers(mouse, ident.1 = 1, min.pct = 0.25)
+head(cluster1.markers, n = 5)
+VlnPlot(mouse, features = c("Rpl7", "Rpl31", "Col3a1", "Col5a2", "Spats2l"))
+
+cluster2.markers <- FindMarkers(mouse, ident.1 = 2, min.pct = 0.25)
+head(cluster2.markers, n = 5)
+VlnPlot(mouse, features = c("Col3a1", "Des", "Serpine2", "Rgs5", "Rgs4"))
+```
+
+```{r}
+cluster3.markers <- FindMarkers(mouse, ident.1 = 3, min.pct = 0.25)
+head(cluster3.markers, n = 5)
+VlnPlot(mouse, features = c("Col3a1", "Col5a2", "Selp", "F11r", "Cd34"))
+```
+"Selp", "F11r", "Cd34" very significant
+```{r}
+cluster4.markers <- FindMarkers(mouse, ident.1 = 4, min.pct = 0.25)
+head(cluster4.markers, n = 5)
+VlnPlot(mouse, features = c("Col3a1", "Mdk", "Tmsb4x", "Eln", "Col1a2"))
+
+cluster5.markers <- FindMarkers(mouse, ident.1 = 5, ident.2 = c(0, 3), min.pct = 0.25)
+head(cluster5.markers, n = 5)
+VlnPlot(mouse, features = c("Fcer1g", "Il1b", "Ctss", "Laptm5", "Cd52"))
+```
+aus Paper supplm
+```{r}
+VlnPlot(mouse, features = c("Crabp1", "Des", "Rgs5", "C1qb", "Pf4", "Eln"))
+VlnPlot(mouse, features = c("Ogn", "Cd93", "Pecam1","Birc5", "Ccnb2", "Icos"))
+VlnPlot(mouse, features = c("Nkg7", "Ccr7", "H2-DMb1", "Hdc",  "G0s2", "Cadm4"))
+VlnPlot(mouse, features = c("Itih5", "Hba-a2", "Hbb-bs", "Acp5", "Mmp9", "Ccl21a"))
+VlnPlot(mouse, features = c("Lyve1"))
+```
+```
 FeaturePlot(mouse, features = c("Sparc", "Tyrobp", "Igfbp7", "Pecam1", "Cd34", "Mfap4", "Ndufa4l2", "Il6",
                                "Birc5"))
 mouse.markers %>%
@@ -167,11 +203,12 @@ DoHeatmap(mouse, features = top10$gene) + NoLegend()
 ```
 
 # XI. Assigning Cell Type Identity to Clusters
-new.cluster.ids <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15")
+```
+new.cluster.ids <- c("0", "FIB-1", "FIB-2", "ENDO", "FIB-3", "5", "MYL", "7", "8", "9", "10", "SCH", "DEN")
 names(new.cluster.ids) <- levels(mouse)
 mouse <- RenameIdents(mouse, new.cluster.ids)
 DimPlot(mouse, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
-
+```
 #FindConservedMarkers(mouse, idents.1= [nr.] )
 #Idents(mouse)
 #RenameIdents(mouse, '[nr.]'= [celltype] )

@@ -84,9 +84,12 @@ mouse.markers %>%
 #cluster0.markers <- FindMarkers(mouse, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
 cluster0.markers <- FindMarkers(mouse, ident.1 = 0, logfc.threshold = 0.2, test.use = "roc", only.pos = TRUE)
 VlnPlot(mouse, features = c("Rgs5", "Tyrobp"))
+VlnPlot(mouse, features = c("Crabp1", "Itm2a"))
+VlnPlot(mouse, features = c("Ptn", "H19"))
+#VlnPlot(mouse, features = c("Saa3", "Crabp1"))
 VlnPlot(mouse, features = c("Col1a1", "Col1a2"), slot = "counts", log = TRUE) #plot raw counts
 #FeaturePlot(mouse, features = c("Sparc", "Tyrobp", "Igfbp7", "Pecam1", "Cd34", "Mfap4", "Ndufa4l2", "Il6",
-                               "Birc5"))
+#"Birc5"))
 FeaturePlot(mouse, features = c("Crabp1", "Itm2a", "Ptn", "H19", "Saa3", "Crabp1", "Rgs5", "Col4a1",
                                 "Ctla2a", "Col4a1"))
 FeaturePlot(mouse, features = c("Col5a1", "Tnc"))
@@ -96,6 +99,11 @@ mouse.markers %>%
   top_n(n = 10, wt = avg_log2FC) -> top10
 DoHeatmap(mouse, features = top10$gene) + NoLegend()
 
+cluster0.markers <- FindMarkers(mouse, ident.1 = 2, min.pct = 0.25)
+head(cluster0.markers, n = 2)
+FeaturePlot(mouse, features = c("Col5a1 ", "Tnc"))
+
+
 
 #XI. Assigning Cell Type Identity to Clusters
 new.cluster.ids <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15")
@@ -104,4 +112,6 @@ mouse <- RenameIdents(mouse, new.cluster.ids)
 DimPlot(mouse, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 
 
-
+#FindConservedMarkers(mouse, idents.1= [nr.] )
+#Idents(mouse)
+#RenameIdents(mouse, '[nr.]'= [celltype] )

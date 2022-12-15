@@ -1,8 +1,4 @@
----
-title: "md"
-output: html_document
-date: "2022-12-01"
----
+
 # I.Setup
 Libraries needed: <!-- Note: I wrote results hide but the ## are not results maybe?? -->[Note: I wrote results hide but the ## are not results maybe??]
 ```{r, results = "hide"}
@@ -21,4 +17,170 @@ meta = data_humanSkin$meta
 husk <- CreateSeuratObject(data.input, meta.data = meta)
 
 husk
+#husk.data
+#husk.data[c("A1BG", "A4GALT", "A4GALT"), 1:30]
+```
+
+
+
+# II. Pre-processing
+
+```{r}
+husk[["percent.mt"]] <- PercentageFeatureSet(husk, pattern = "^MT-") 
+VlnPlot(husk, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3) 
+head(husk@meta.data, 5) 
+head(husk@meta.data, 10)
+
+husk.data[c("CCL2", "CCL19", "CCR7"), 1:30] 
+husk.data[c("CCL2", "CCL19", "CCR7"), 2000:2020]
+plot1 <- FeatureScatter(husk, feature1 = "nCount_RNA", feature2 = "percent.mt") 
+plot2 <- FeatureScatter(husk, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+plot1 + plot2
+```
+filter "husk"
+```{r}
+husk <- subset(husk, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+```
+
+
+### Visualization of feature-feature relationships
+```{r}
+plot1 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "percent.mt") 
+
+#since all have same mt quality...
+
+plot2 <- FeatureScatter(mouse, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+#positively correlated
+
+plot1 + plot2
+```
+
+# III. Normalization
+husk <- NormalizeData(husk)
+
+# IV. Feature Selection
+```{r}
+husk <- FindVariableFeatures(husk, selection.method = "vst", nfeatures = 2000)
+top10 <- head(VariableFeatures(husk), 10) 
+top10
+
+top20 <- head(VariableFeatures(husk), 20) 
+top20 
+
+top50 <- head(VariableFeatures(husk), 50) 
+top50
+
+plot1 <- VariableFeaturePlot(husk)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1 + plot2
+```
+
+# V. Scaling
+```{r}
+all.genes <- rownames(husk)
+husk <- ScaleData(husk, features = all.genes)
+```
+# VI. Linear Dimension Reduction
+### Perform PCA
+```{r}
+husk <- RunPCA(husk, features = VariableFeatures(object = husk))
+print(husk[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(husk, dims = 1:2, reduction = "pca")
+DimPlot(husk, reduction = "pca")
+DimPlot(husk, reduction = "pca",label = TRUE)
+```
+
+heatmap: exploration of the primary sources of heterogeneity -> decide which PCs to include for further downstream analyses
+```{r}
+DimHeatmap(husk, dims = 1, cells = 500, balanced = TRUE) #heatmap: exploration of the primary sources of heterogeneity
+DimHeatmap(husk, dims = 1:15, cells = 500, balanced = TRUE)
+```
+# VII. Determination of Dimension
+Metafeature combines information across a correlated feature set. 
+top principal components => robust compression
+how many PCs to take?
+###JackStraw procedure
+permute subset of the data (1% by default) and rerun PCA
+significant PCs ~ strong enrichment of low p-value features
+```{r}
+husk <- JackStraw(husk, num.replicate = 100)
+husk <- ScoreJackStraw(husk, dims = 1:20)
+```
+```{r}
+JackStrawPlot(husk, dims = 1:15)
+```
+
+alternative heuristic method Elbow plot:
+observe where the elbow is and then see which PCs to choose
+```{r}
+ElbowPlot(husk)
+```
+# VIII. Clustering Cells
+```{r}
+husk <- FindNeighbors(husk, dims = 1:10)
+husk <- FindClusters(husk, resolution = 0.7)
+head(Idents(mouse), 5)
+```
+# IX. Non-linear Dimension Reduction
+## e.g. UMAP, tSNE
+input to the UMAP and tSNE: same PCs as input to the clustering analysis
+```{r}
+husk <- RunUMAP(husk, dims = 1:10)
+#DimPlot(husk, reduction = "umap")
+DimPlot(husk, reduction = "umap", label = TRUE)
+saveRDS(husk, file = "/Users/xiaoyizheng/Downloads/Bioinfo_Einarbeiten/CellChatSelf/husk/output/huskOutput.rds")
+```
+
+
+# X. Cluster Biomarkers
+### Finding differentially expressed features
+- min.pct argument:  requires a feature to be detected at a minimum percentage in either of the two groups of cells
+- thresh.test argument: requires a feature to be differentially expressed (on average) by some amount between the two groups
+- to speed up computations: max.cells.per.ident
+```{r}
+cluster0.markers <- FindMarkers(husk, ident.1 = 0, min.pct = 0.25)
+head(cluster0.markers, n = 5)
+VlnPlot(husk, features = c("CLEC3B", "FBN1", "FSTL1", "IGFBP5", "MFAP5"))
+
+cluster1.markers <- FindMarkers(husk, ident.1 = 1, min.pct = 0.25)
+head(cluster1.markers, n = 5)
+VlnPlot(husk, features = c("APOE", "CXCL12", "IGFBP7", "APOC1", "MGST1"))
+
+cluster2.markers <- FindMarkers(husk, ident.1 = 2, min.pct = 0.25)
+head(cluster2.markers, n = 5)
+VlnPlot(husk, features = c("B2M", "CD3D", "CD52", "GSN", "IL32"))
+
+
+cluster3.markers <- FindMarkers(husk, ident.1 = 3, min.pct = 0.25)
+head(cluster3.markers, n = 5)
+VlnPlot(husk, features = c("CFD", "APOD", "GSN", "DCN", "CXCL14"))
+
+cluster4.markers <- FindMarkers(husk, ident.1 = 4, min.pct = 0.25)
+head(cluster4.markers, n = 5)
+VlnPlot(husk, features = c("CD69", "FOS", "JUNB", "CD52", "DNAJB1"))
+
+cluster5.markers <- FindMarkers(husk, ident.1 = 5, ident.2 = c(0, 3), min.pct = 0.25)
+head(cluster5.markers, n = 5)
+VlnPlot(husk, features = c("COL6A5", "TNC", "APCDD1", "COL18A1", "CFD"))
+
+husk.markers <- FindAllMarkers(husk, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.2) #0.2 is okki
+husk.markers %>%
+  group_by(cluster) %>%
+  slice_max(n = 2, order_by = avg_log2FC)
+
+FeaturePlot(husk, features = c("CFD", "IBSP", "COCH", "CCL1", "HLA-DRA", "APOD", "MMP12", "CXCL14", "CCL19", "CD74"))
+
+husk.markers %>%
+  group_by(cluster) %>%
+  top_n(n = 10, wt = avg_log2FC) -> top10
+DoHeatmap(husk, features = top10$gene) + NoLegend()
+
+```
+
+# XI. Assigning Cell Type Identity to Clusters
+```{r}
+new.cluster.ids <- c("0","1","FIB","3","TC","5","6","7","8","9","10")
+names(new.cluster.ids) <- levels(husk)
+husk <- RenameIdents(husk, new.cluster.ids)
+DimPlot(husk, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 ```
