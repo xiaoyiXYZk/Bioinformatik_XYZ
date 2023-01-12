@@ -9,8 +9,8 @@ library(patchwork)
 
 Loading data & Checking out how the loaded data looks like:
 ```{r, results = "hide"}
-#mouse.data <- Read10X(data.dir = "/home/xiaoyi/Documents/Praktikum/Bioinformatik/GSE113854_RAW")
-mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Praktikum/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
+mouse.data <- Read10X(data.dir = "/home/xiaoyi/Documents/Praktikum/Bioinformatik/GSE113854_RAW")
+#mouse.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Praktikum/Bioinfo_Einarbeiten/CellChatSelf/mouse/GSE113854_RAW/")
 
 mouse.data
 ```
@@ -224,13 +224,13 @@ DimPlot(mouse, label = TRUE)
 ```
 
 Or directly writing tags
-```{r}
+
 new.cluster.ids <- c("FIB-1", "FIB-3", "MYL", "FIB-2", "4", "ENDO or LYME", "FIB-4", "7", "ENDO", "9", "10", "SCH", "DEN")
 names(new.cluster.ids) <- levels(mouse)
 mouse <- RenameIdents(mouse, new.cluster.ids)
 DimPlot(mouse, reduction = "umap", label = TRUE, pt.size = 0.5)
 #DimPlot(mouse, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
-```
+
 some maybe useful codes (not needed for right now):
 ```{r}
 #FindConservedMarkers(mouse, idents.1= [nr.] )
