@@ -157,25 +157,25 @@ VlnPlot(mosk, features = c("Cd93", "Pecam1"), sort = 'decreasing')
 #FIB-4:
 VlnPlot(mosk, features = c("Birc5", "Ccnb2"), sort = 'decreasing')
 
-#TC
+#TC:
 VlnPlot(mosk, features = c("Icos", "Nkg7"), sort = 'decreasing')
 
-#BC
+#BC:
 VlnPlot(mosk, features = c("Ccr7", "H2-DMb1"), sort = 'decreasing')
 
-#FIB-5
+#FIB-5:
 VlnPlot(mosk, features = c("Hdc",  "G0s2"), sort = 'decreasing')
 
-#SCH
+#SCH:
 VlnPlot(mosk, features = c("Cadm4", "Itih5"), sort = 'decreasing') + labs(title = "SCH")
 
-#RBC
+#RBC:
 VlnPlot(mosk, features = c("Hba-a2", "Hbb-bs"), sort = 'decreasing')
 
-#DEN
+#DEN:
 VlnPlot(mosk, features = c("Acp5", "Mmp9"), sort = 'decreasing')
 
-#LYME
+#LYME:
 VlnPlot(mosk, features = c("Ccl21a", "Lyve1"), sort = 'decreasing')
 
 VlnPlot(mosk, features = c("Crabp1", "Des", "Rgs5", "C1qb", "Pf4", "Eln", "Ogn", "Cd93", "Pecam1"), sort = 'decreasing')
@@ -223,13 +223,13 @@ DoHeatmap(mosk, features = top10$gene)
 
 
 #alternative way to assign IDs
-mosk <- RenameIdents(mosk, `0` = "0_FIB-1", `1` = "1_FIB-3", `2` = "2_MYL",
-                      `3` = "3_FIB-2", `4` = "4_undecided", `5` = "5_LYME", `6` = "6_FIB-4", `7` = "7_undecided", `8` = "8_ENDO", `9` = "9_undecided",
-                      `10` = "10_undecided", `11` = "11_SCH", `12` = "12_DEN")
-DimPlot(mosk, label = TRUE)
+# mosk <- RenameIdents(mosk, `0` = "0_FIB-1", `1` = "1_FIB-3", `2` = "2_MYL",
+#                       `3` = "3_FIB-2", `4` = "4_undecided", `5` = "5_LYME", `6` = "6_FIB-4", `7` = "7_undecided", `8` = "8_ENDO", `9` = "9_undecided",
+#                       `10` = "10_undecided", `11` = "11_SCH", `12` = "12_DEN")
+# DimPlot(mosk, label = TRUE)
 
 #XI. Assigning Cell Type Identity to Clusters
-new.cluster.ids <- c("FIB-1", "FIB-3", "MYL", "FIB-2", "4", "ENDO or LYME", "FIB-4", "7", "ENDO", "9", "10", "SCH", "DEN")
+new.cluster.ids <- c("FIB-1", "FIB-3", "MYL", "FIB-2", "BC", "LYME", "FIB-4", "RBC", "ENDO", "TC", "FIB-5", "SCH", "DEN")
 names(new.cluster.ids) <- levels(mosk)
 mosk <- RenameIdents(mosk, new.cluster.ids)
 DimPlot(mosk, reduction = "umap", label = TRUE, pt.size = 0.5)
@@ -243,7 +243,21 @@ DimPlot(mosk, reduction = "umap", label = TRUE, pt.size = 0.5)
 
 
 #dot plot
-markers.to.plot <- c("Crabp1", "Des", "Rgs5", "C1qb", "Pf4", "Eln", "Ogn", "Cd93", "Pecam1","Birc5", "Ccnb2", "Icos", "Nkg7", "Ccr7", "H2-DMb1", "Hdc",  "G0s2", "Cadm4", "Itih5", "Hba-a2", "Hbb-bs", "Acp5", "Mmp9", "Ccl21a", "Lyve1")
+markers.to.plot <- c("Crabp1", 
+                     "Hba-a2", "Hbb-bs",
+                     "Eln", "Ogn",
+                     "Ccr7", "H2-DMb1",
+                     "C1qb", "Pf4",
+                     "Des", "Rgs5",
+                     "Cd93", "Pecam1",
+                     "Ccl21a", "Lyve1",
+                     "Birc5", "Ccnb2",
+                     "Nkg7",
+                     "Hdc",  "G0s2",
+                     "Icos",
+                     "Acp5", "Mmp9")
+
+
 DotPlot(
   mosk,
   assay = NULL,
