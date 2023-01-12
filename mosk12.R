@@ -254,7 +254,6 @@ markers.to.plot <- c("Crabp1",
                      "Birc5", "Ccnb2",
                      "Nkg7",
                      "Hdc",  "G0s2",
-                     "Icos",
                      "Acp5", "Mmp9")
 
 

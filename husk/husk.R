@@ -58,15 +58,37 @@ husk <- ScaleData(husk, features = all.genes)
 
 #optional: husk <- ScaleData(husk)
 
-#VI. Linear Dimension Reduction
-husk <- RunPCA(husk, features = VariableFeatures(object = husk))
-print(husk[["pca"]], dims = 1:5, nfeatures = 5)
-VizDimLoadings(husk, dims = 1:2, reduction = "pca")
-DimPlot(husk, reduction = "pca")
-DimPlot(husk, reduction = "pca",label = TRUE)
+#Between V. and VI.: spliting the data into two groups according to wether NL or LS
+huskNL <- husk[which(husk@meta.data$condition == "NL"),]
+huskLS <- husk[which(husk@meta.data$condition == "LS"),]
 
-DimHeatmap(husk, dims = 1, cells = 500, balanced = TRUE) #heatmap: exploration of the primary sources of heterogeneity
-DimHeatmap(husk, dims = 1:15, cells = 500, balanced = TRUE)
+huskNL <- FindVariableFeatures(huskNL, selection.method = "vst", nfeatures = 2000)
+top10NL <- head(VariableFeatures(huskNL), 10) # Identify the 10 most highly variable genes
+top10NL
+
+huskLS <- FindVariableFeatures(huskLS, selection.method = "vst", nfeatures = 2000)
+top10LS <- head(VariableFeatures(huskLS), 10) # Identify the 10 most highly variable genes
+top10LS
+
+top10_NL = c("CCL1", "CCL19", "CCL17", "CD74", "IL22",  "IL9",  "IL32", "DCN",  "CCL5", "CD52")
+top10_LS = c("COCH", "HLA-DRA", "CFD", "APOD", "GNLY", "CXCL14", "HLA-DPA1", "HLA-DPB1", "FABP7", "JCHAIN")
+gemeins_top10 = intersect(top10_NL, top10_LS)
+gemeins_top10
+
+#VI. Linear Dimension Reduction
+huskNL <- RunPCA(huskNL, features = VariableFeatures(object = huskNL))
+print(huskNL[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(huskNL, dims = 1:2, reduction = "pca")
+DimPlot(huskNL, reduction = "pca")
+#DimPlot(huskNL, reduction = "pca",label = TRUE)
+
+huskLS <- RunPCA(huskLS, features = VariableFeatures(object = huskLS))
+print(huskLS[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(huskLS, dims = 1:2, reduction = "pca")
+DimPlot(huskLS, reduction = "pca")
+
+##DimHeatmap(husk, dims = 1, cells = 500, balanced = TRUE) #heatmap: exploration of the primary sources of heterogeneity
+##DimHeatmap(husk, dims = 1:15, cells = 500, balanced = TRUE)
 #metafeature: combines information across a correlated feature set
 
 #VII. Determination of Dimension
@@ -74,6 +96,11 @@ husk <- JackStraw(husk, num.replicate = 100)
 husk <- ScoreJackStraw(husk, dims = 1:20)
 JackStrawPlot(husk, dims = 1:15) #accroding to graph: good p-values
 ElbowPlot(husk) #if taking the first signf. slope change it would remain only 3PCs -> taking 10 or 15 instead?
+
+# husk <- JackStraw(husk, num.replicate = 100)
+# husk <- ScoreJackStraw(husk, dims = 1:20)
+# JackStrawPlot(husk, dims = 1:15) #accroding to graph: good p-values
+# ElbowPlot(husk) #if taking the first signf. slope change it would remain only 3PCs -> taking 10 or 15 instead?
 
 #VIII. Clustering Cells
 husk <- FindNeighbors(husk, dims = 1:10)
