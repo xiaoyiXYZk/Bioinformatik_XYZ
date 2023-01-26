@@ -1,0 +1,20 @@
+# I.Setup
+Libraries needed:
+```{r, results = "hide"}
+library(Biobase)
+library(GEOquery)
+library(Seurat)
+library(CellChat)
+library(dplyr)
+library(patchwork)
+```
+
+
+load data (human data from CellChat paper, with annotation)
+```{r}
+load(url("https://ndownloader.figshare.com/files/25950872"))
+
+husk_an.data = data_humanSkin$data
+husk_an.meta = data_humanSkin$meta
+husk_an <- CreateSeuratObject(counts = husk_an.data, meta.data = husk_an.meta)
+```

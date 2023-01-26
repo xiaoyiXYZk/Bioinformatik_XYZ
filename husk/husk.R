@@ -5,7 +5,7 @@ library(CellChat)
 library(dplyr)
 library(patchwork)
 
-#husk.data <- Read10X(data.dir = "/Users/xiaoyizheng/Downloads/Praktikum/Bioinformatik/HumanData/")
+
 load(url("https://ndownloader.figshare.com/files/25950872"))
 
 husk.data = data_humanSkin$data
@@ -42,12 +42,6 @@ husk <- FindVariableFeatures(husk, selection.method = "vst", nfeatures = 2000)
 top10 <- head(VariableFeatures(husk), 10) # Identify the 10 most highly variable genes
 top10
 
-top20 <- head(VariableFeatures(husk), 20) # Identify the 20 most highly variable genes
-top20 
-
-top50 <- head(VariableFeatures(husk), 50) 
-top50
-
 plot1 <- VariableFeaturePlot(husk)
 plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
 plot1 + plot2
@@ -58,9 +52,13 @@ husk <- ScaleData(husk, features = all.genes)
 
 #optional: husk <- ScaleData(husk)
 
-#Between V. and VI.: spliting the data into two groups according to wether NL or LS
+#Between V. and VI.: spliting the data into two groups according to whether NL or LS
+#two Seurat objects for comparative analysis later on in CrossTalkR
 huskNL <- husk[which(husk@meta.data$condition == "NL"),]
 huskLS <- husk[which(husk@meta.data$condition == "LS"),]
+
+huskNL <- ScaleData(huskNL)
+huskLS <- ScaleData(huskLS)
 
 huskNL <- FindVariableFeatures(huskNL, selection.method = "vst", nfeatures = 2000)
 top10NL <- head(VariableFeatures(huskNL), 10) # Identify the 10 most highly variable genes
@@ -72,10 +70,16 @@ top10LS
 
 top10_NL = c("CCL1", "CCL19", "CCL17", "CD74", "IL22",  "IL9",  "IL32", "DCN",  "CCL5", "CD52")
 top10_LS = c("COCH", "HLA-DRA", "CFD", "APOD", "GNLY", "CXCL14", "HLA-DPA1", "HLA-DPB1", "FABP7", "JCHAIN")
-gemeins_top10 = intersect(top10_NL, top10_LS)
-gemeins_top10
+common_top10 = intersect(top10_NL, top10_LS)
+common_top10
 
 #VI. Linear Dimension Reduction
+
+husk <- RunPCA(husk, features = VariableFeatures(object = husk))
+print(husk[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(husk, dims = 1:2, reduction = "pca")
+DimPlot(husk, reduction = "pca")
+
 huskNL <- RunPCA(huskNL, features = VariableFeatures(object = huskNL))
 print(huskNL[["pca"]], dims = 1:5, nfeatures = 5)
 VizDimLoadings(huskNL, dims = 1:2, reduction = "pca")
@@ -115,7 +119,7 @@ head(Idents(husk), 5)
 husk <- RunUMAP(husk, dims = 1:10)
 #DimPlot(husk, reduction = "umap")
 DimPlot(husk, reduction = "umap", label = TRUE)
-saveRDS(husk, file = "/Users/xiaoyizheng/Downloads/Bioinfo_Einarbeiten/CellChatSelf/husk/output/huskOutput.rds")
+#saveRDS(husk, file = "/Users/xiaoyizheng/Downloads/Bioinfo_Einarbeiten/CellChatSelf/husk/output/huskOutput.rds")
 
 
 #X. Cluster Biomarkers
